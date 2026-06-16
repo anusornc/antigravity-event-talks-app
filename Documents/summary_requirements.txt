@@ -1,0 +1,1 @@
+This configuration document lists the external Python packages required to run the BigQuery Release Explorer application. It specifies specific versions for the Flask web framework, the Requests HTTP library, and the Feedparser library. Installing these dependencies guarantees that the backend can fetch, parse, and serve the release feed correctly.
