@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastUpdatedText = document.getElementById('last-updated-text');
     const statusDot = document.querySelector('.status-dot');
     const feedCountBadge = document.getElementById('feed-count-badge');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
     const searchInput = document.getElementById('search-input');
     const tagFilters = document.querySelectorAll('.filter-tag');
     
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshBtn.addEventListener('click', fetchReleaseNotes);
     retryBtn.addEventListener('click', fetchReleaseNotes);
     resetFiltersBtn.addEventListener('click', resetFilters);
+    exportCsvBtn.addEventListener('click', exportToCSV);
     
     searchInput.addEventListener('input', (e) => {
         searchQuery = e.target.value.toLowerCase();
@@ -212,6 +214,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-header">
                         <span class="badge ${badgeClass}">${update.category}</span>
                         <div class="card-actions">
+                            <button class="card-action-btn copy-card-btn" title="Copy to Clipboard">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
                             <button class="card-action-btn tweet-card-btn" title="Prepare Tweet">
                                 <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -230,6 +238,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (e.target.tagName === 'A') return;
                     
                     selectCard(cardKey, entry, update);
+                });
+                
+                // Direct Copy button inside card
+                const cardCopyBtn = card.querySelector('.copy-card-btn');
+                cardCopyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    copyToClipboard(entry, update, cardCopyBtn);
                 });
                 
                 // Direct Tweet button inside card
@@ -326,5 +341,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 charProgress.style.stroke = 'var(--color-primary)';
             }
         }
+    }
+
+    // Copy to Clipboard logic
+    function copyToClipboard(entry, update, btnElement) {
+        const textToCopy = `BigQuery [${update.category}] (${entry.date}): ${update.plain_text}\nSource: ${entry.link || "https://docs.cloud.google.com/bigquery/docs/release-notes"}`;
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            btnElement.classList.add('copied');
+            const originalSVG = btnElement.innerHTML;
+            btnElement.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            `;
+            
+            setTimeout(() => {
+                btnElement.classList.remove('copied');
+                btnElement.innerHTML = originalSVG;
+            }, 1500);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    }
+
+    // Export to CSV logic
+    function exportToCSV() {
+        const filteredData = getFilteredEntries();
+        if (filteredData.length === 0) return;
+        
+        const headers = ['Date', 'Category', 'Update Text', 'Source URL'];
+        const rows = [];
+        
+        filteredData.forEach(entry => {
+            entry.updates.forEach(update => {
+                const escapedText = update.plain_text.replace(/"/g, '""');
+                const escapedCategory = update.category.replace(/"/g, '""');
+                const escapedDate = entry.date.replace(/"/g, '""');
+                const escapedLink = (entry.link || '').replace(/"/g, '""');
+                
+                rows.push([
+                    `"${escapedDate}"`,
+                    `"${escapedCategory}"`,
+                    `"${escapedText}"`,
+                    `"${escapedLink}"`
+                ]);
+            });
+        });
+        
+        const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        
+        // Create Blob and trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `bigquery_release_notes_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 });
