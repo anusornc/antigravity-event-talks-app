@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Explorer</title>
+    <meta name="description" content="A premium release notes explorer for Google Cloud BigQuery, allowing users to browse updates and easily tweet about new features and fixes.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="brand-container">
+                <div class="logo-wrapper">
+                    <!-- Custom SVG Logo for BigQuery Explorer -->
+                    <svg viewBox="0 0 24 24" fill="none" class="brand-logo" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#grad1)" />
+                        <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="url(#grad2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <defs>
+                            <linearGradient id="grad1" x1="2" y1="2" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#4285F4" />
+                                <stop offset="50%" stop-color="#34A853" />
+                                <stop offset="100%" stop-color="#FBBC05" />
+                            </linearGradient>
+                            <linearGradient id="grad2" x1="2" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#4285F4" />
+                                <stop offset="100%" stop-color="#EA4335" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1 id="app-title">BigQuery Release Explorer</h1>
+                    <p class="subtitle">Track updates, features, and fixes from Google Cloud BigQuery</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="status-indicator" id="status-container">
+                    <span class="status-dot"></span>
+                    <span id="last-updated-text">Checking for updates...</span>
+                </div>
+                <button id="refresh-btn" class="btn btn-primary btn-refresh" title="Refresh Release Notes">
+                    <svg class="spinner-icon" id="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-main">
+            <!-- Sidebar / Control Panel -->
+            <section class="left-panel">
+                <div class="glass-card search-card">
+                    <h2>Filter & Search</h2>
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search release notes...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Filter by Category</label>
+                        <div class="tag-filters" id="tag-filters-container">
+                            <button class="filter-tag active" data-filter="all">All</button>
+                            <button class="filter-tag" data-filter="feature">Features</button>
+                            <button class="filter-tag" data-filter="issue">Issues</button>
+                            <button class="filter-tag" data-filter="deprecation">Deprecations</button>
+                            <button class="filter-tag" data-filter="general">General</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Tweet Workspace Card -->
+                <div class="glass-card tweet-composer-card" id="tweet-composer-section">
+                    <div class="composer-header">
+                        <h2>Tweet Composer</h2>
+                        <span class="composer-hint">Select any update card to load it</span>
+                    </div>
+                    
+                    <div class="mock-tweet-box">
+                        <div class="mock-user-info">
+                            <div class="mock-avatar">BQ</div>
+                            <div class="mock-names">
+                                <span class="mock-display-name">BigQuery Explorer</span>
+                                <span class="mock-username">@bq_explorer</span>
+                            </div>
+                        </div>
+                        
+                        <div class="tweet-textarea-wrapper">
+                            <textarea id="tweet-textarea" placeholder="Select a release note to draft a tweet..." maxlength="280"></textarea>
+                        </div>
+                        
+                        <div class="tweet-footer">
+                            <div class="char-counter-container">
+                                <svg class="progress-ring" width="24" height="24">
+                                    <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="2.5" fill="transparent" r="9" cx="12" cy="12"/>
+                                    <circle class="progress-ring__circle" id="char-progress" stroke="#3b82f6" stroke-width="2.5" fill="transparent" r="9" cx="12" cy="12"/>
+                                </svg>
+                                <span id="char-count">280</span>
+                            </div>
+                            
+                            <button id="tweet-btn" class="btn btn-accent btn-tweet" disabled>
+                                <svg class="tweet-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                                <span>Post on X</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Release Notes List Section -->
+            <section class="right-panel">
+                <div class="panel-header">
+                    <h2>Release Feed</h2>
+                    <span class="feed-count" id="feed-count-badge">0 Updates Loaded</span>
+                </div>
+                
+                <div id="loading-state" class="feed-state-container">
+                    <div class="pulsing-loader">
+                        <div class="loader-circle"></div>
+                        <div class="loader-circle"></div>
+                        <div class="loader-circle"></div>
+                    </div>
+                    <p>Fetching BigQuery release notes...</p>
+                </div>
+                
+                <div id="error-state" class="feed-state-container hidden">
+                    <div class="error-icon-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h3>Failed to load release notes</h3>
+                    <p id="error-message">Unknown error occurred.</p>
+                    <button id="retry-btn" class="btn btn-secondary">Try Again</button>
+                </div>
+
+                <div id="empty-state" class="feed-state-container hidden">
+                    <div class="empty-icon-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 5.68629 16.3137 3 13 3H11C7.68629 3 5 5.68629 5 9V11" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3>No release notes match your filters</h3>
+                    <p>Try resetting filters or changing your search term.</p>
+                    <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
+                </div>
+
+                <div id="feed-container" class="feed-timeline hidden">
+                    <!-- Dynamic feed entries will be inserted here -->
+                </div>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>BigQuery Release Explorer &copy; 2026. Data fetched in real-time from the official Google Cloud Feed.</p>
+        </footer>
+    </div>
+    
+    <!-- Custom JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
