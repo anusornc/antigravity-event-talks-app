@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusDot = document.querySelector('.status-dot');
     const feedCountBadge = document.getElementById('feed-count-badge');
     const exportCsvBtn = document.getElementById('export-csv-btn');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
     const searchInput = document.getElementById('search-input');
     const tagFilters = document.querySelectorAll('.filter-tag');
     
@@ -35,6 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
         charProgress.style.strokeDashoffset = progressCircumference;
     }
 
+    // Check local storage for theme preference
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    if (currentTheme === 'light') {
+        document.body.classList.add('light-mode');
+    }
+
     // Initialize the App
     fetchReleaseNotes();
 
@@ -43,6 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
     retryBtn.addEventListener('click', fetchReleaseNotes);
     resetFiltersBtn.addEventListener('click', resetFilters);
     exportCsvBtn.addEventListener('click', exportToCSV);
+    
+    themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+        localStorage.setItem('theme', theme);
+    });
     
     searchInput.addEventListener('input', (e) => {
         searchQuery = e.target.value.toLowerCase();

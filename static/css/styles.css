@@ -841,3 +841,70 @@ body {
         transform: scale(1.1);
     }
 }
+
+/* Light Mode Variable Overrides */
+body.light-mode {
+    --bg-base: #f8fafc;
+    --bg-surface: rgba(255, 255, 255, 0.75);
+    --bg-surface-hover: rgba(255, 255, 255, 0.95);
+    --bg-card-active: rgba(241, 245, 249, 0.95);
+    
+    --border-color: rgba(15, 23, 42, 0.08);
+    --border-color-active: rgba(66, 133, 244, 0.6);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+}
+
+body.light-mode .glow-bg {
+    background: radial-gradient(circle, rgba(66, 133, 244, 0.06) 0%, rgba(26, 115, 232, 0.01) 50%, transparent 100%);
+}
+
+body.light-mode .mock-tweet-box {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+body.light-mode .search-box input {
+    background: rgba(15, 23, 42, 0.03);
+    color: var(--text-primary);
+}
+
+body.light-mode .brand-text h1 {
+    background: linear-gradient(135deg, #0f172a 30%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.light-mode .card-content {
+    color: #1e293b;
+}
+
+body.light-mode .timeline-date-header h3 {
+    color: #0f172a;
+}
+
+body.light-mode .filter-tag {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+body.light-mode .filter-tag:hover {
+    background: rgba(15, 23, 42, 0.05);
+}
+
+body.light-mode .glass-card {
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+body.light-mode .status-indicator {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+/* Hide sun/moon icons based on active theme */
+body.light-mode .sun-icon {
+    display: none;
+}
+
+body:not(.light-mode) .moon-icon {
+    display: none;
+}
